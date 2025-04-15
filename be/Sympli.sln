@@ -1,0 +1,51 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{84283005-3473-4887-9EE6-F9FAF2148366}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Searching", "Searching", "{BA10F69C-E135-473C-84D6-4287944E044F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sympli.Searching.Core", "Services\Searching\Sympli.Searching.Core\Sympli.Searching.Core.csproj", "{AF90EACC-39F9-4BE6-B462-937B5A43665E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sympli.Searching.Application", "Services\Searching\Sympli.Searching.Application\Sympli.Searching.Application.csproj", "{CF8E9452-48CA-499E-B18C-293B2C64E263}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sympli.Searching.Infrastructure", "Services\Searching\Sympli.Searching.Infrastructure\Sympli.Searching.Infrastructure.csproj", "{DB86ACC9-B301-4695-8D4E-2B1A7B7262C4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sympli.Searching.API", "Services\Searching\Sympli.Searching.API\Sympli.Searching.API.csproj", "{1C28498B-4284-414B-ABCA-214134D9D188}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AF90EACC-39F9-4BE6-B462-937B5A43665E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF90EACC-39F9-4BE6-B462-937B5A43665E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF90EACC-39F9-4BE6-B462-937B5A43665E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF90EACC-39F9-4BE6-B462-937B5A43665E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF8E9452-48CA-499E-B18C-293B2C64E263}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF8E9452-48CA-499E-B18C-293B2C64E263}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF8E9452-48CA-499E-B18C-293B2C64E263}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF8E9452-48CA-499E-B18C-293B2C64E263}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DB86ACC9-B301-4695-8D4E-2B1A7B7262C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DB86ACC9-B301-4695-8D4E-2B1A7B7262C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DB86ACC9-B301-4695-8D4E-2B1A7B7262C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DB86ACC9-B301-4695-8D4E-2B1A7B7262C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C28498B-4284-414B-ABCA-214134D9D188}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C28498B-4284-414B-ABCA-214134D9D188}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C28498B-4284-414B-ABCA-214134D9D188}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C28498B-4284-414B-ABCA-214134D9D188}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{BA10F69C-E135-473C-84D6-4287944E044F} = {84283005-3473-4887-9EE6-F9FAF2148366}
+		{AF90EACC-39F9-4BE6-B462-937B5A43665E} = {BA10F69C-E135-473C-84D6-4287944E044F}
+		{CF8E9452-48CA-499E-B18C-293B2C64E263} = {BA10F69C-E135-473C-84D6-4287944E044F}
+		{DB86ACC9-B301-4695-8D4E-2B1A7B7262C4} = {BA10F69C-E135-473C-84D6-4287944E044F}
+		{1C28498B-4284-414B-ABCA-214134D9D188} = {BA10F69C-E135-473C-84D6-4287944E044F}
+	EndGlobalSection
+EndGlobal
