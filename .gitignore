@@ -2,22 +2,6 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-/be/Services/Searching/Sympli.Searching.Core/obj
-/be/.vs
-/be/Services/config.bat
-/be/Services/setup_core_1.bat
-/be/Services/setup_service_0.bat
-/be/CreateStructure/config.bat
-/be/CreateStructure/create_gateway.bat
-/be/CreateStructure/setup_api_4.bat
-/be/CreateStructure/setup_application_2.bat
-/be/CreateStructure/setup_core_1.bat
-/be/CreateStructure/setup_infrastructure_3.bat
-/be/CreateStructure/setup_service_0.bat
-/be/CreateStructure/setup_solution_0.bat
-/be/CreateStructure/setup_tests_5.bat
-/be/Services/Searching/Sympli.Searching.Application/obj
-/be/Services/setup_application_2.bat
-/be/Services/setup_infrastructure_3.bat
-/be/Services/Searching/Sympli.Searching.Infrastructure/obj
-/be/Services/Searching/Sympli.Searching.API/obj
+**/obj/
+**/bin/
+.vs/

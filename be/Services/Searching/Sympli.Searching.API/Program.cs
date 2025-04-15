@@ -1,41 +1,55 @@
+using Sympli.Searching.API.Extensions;
+using Sympli.Searching.API.Router;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+var environment = builder.Environment.EnvironmentName;
+// Load environment-specific settings (e.g., Development, Production)
+builder.Configuration.AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: true);
+
+var configuration = builder.Configuration;
+var appName = configuration["CustomSettings:AppName"];
+var version = configuration["CustomSettings:Version"];
+
+Console.WriteLine($"App Name: {appName} - version: {version}");
+
+var services = builder.Services;
+services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        builder =>
+        {
+            builder.AllowAnyOrigin()
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
+        });
+});
+
+// Register MediatR for CQRS handlers.
+services.MediatorRegister();
+
+// Register the Infrastructure layer services.
+services.ServicesRegister(configuration);
+
+// Optional: Add Swagger for API documentation.
+services.SwaggerRegister();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configure middleware.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Simpli.Searching.API v1"));
 }
+
+// Add Health Checks endpoint
+// app.MapHealthChecks("/health");
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+// Minimal API endpoint for search.
+app.MapSearchingEndpoints();
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
