@@ -34,10 +34,10 @@ namespace Sympli.Searching.Infrastructure.Providers
         {
             string cacheKey = $"google:{keyword}:{targetUrl}".ToLowerInvariant();
 
-            //if (_cache.TryGetValue(cacheKey, out string cachedResult))
-            //{
-            //    return cachedResult;
-            //}
+            if (_cache.TryGetValue(cacheKey, out string cachedResult))
+            {
+                return cachedResult;
+            }
 
             var ranks = new List<int>();
             var start = 0;

@@ -2,7 +2,10 @@
 {
     public enum SearchEngineEnum
     {
+        [System.ComponentModel.Description("Google")]
         Google,
+
+        [System.ComponentModel.Description("Bing")]
         Bing
     }
 }

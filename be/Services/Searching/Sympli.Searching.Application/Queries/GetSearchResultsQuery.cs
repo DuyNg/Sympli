@@ -13,6 +13,7 @@ namespace Sympli.Searching.Application.Queries
     /// </summary>
     public class SearchResultsDto
     {
-        public string Result { get; set; } = string.Empty;
+        public string Browser { get; set; }
+        public string Positions { get; set; } = string.Empty;
     }
 }
