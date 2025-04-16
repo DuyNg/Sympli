@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import './App.scss';
-import { SearchForm } from './components/SearchForm/SearchForm';
-import { ResultsTable } from './components/ResultsTable/ResultsTable';
 import { SearchResult } from './models';
 import { searchKeyword } from './api/searchApi';
 import { Browser } from './types';
+import { ResultsTable, SearchForm } from './components';
 
 const App: React.FC = () => {
   const [results, setResults] = useState<SearchResult[]>([]);
