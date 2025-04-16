@@ -3,8 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
+using Sympli.Searching.Core.Entities;
+using Microsoft.Extensions.Options;
+using Sympli.Searching.Core.Constants;
+using System.Text.RegularExpressions;
+using Sympli.Searching.Core.Utilities;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Sympli.Searching.Infrastructure.Providers
 {
@@ -13,56 +17,65 @@ namespace Sympli.Searching.Infrastructure.Providers
     /// </summary>
     public class GoogleSearchResultProvider : ISearchResultProvider
     {
-        private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IConfiguration _configuration;
+        private readonly HttpClient _httpClient;
+        private readonly IMemoryCache _cache;
+        private readonly SearchSetting _searchSetting;
+        private readonly int _expireTime;
 
-        public GoogleSearchResultProvider(IHttpClientFactory httpClientFactory, IConfiguration configuration)
+        public GoogleSearchResultProvider(IHttpClientFactory httpClientFactory, IOptions<AppSettings> appSettings, IMemoryCache cache)
         {
-            _httpClientFactory = httpClientFactory;
-            _configuration = configuration;
+            _httpClient = httpClientFactory.CreateClient(CommonConstants.GoogleSearchClient);
+            _searchSetting = appSettings.Value.GoogleSearch;
+            _expireTime = appSettings.Value.CacheingExpireation;
+            _cache = cache;
         }
 
-        public async Task<IEnumerable<string>> GetResultsAsync(string keyword)
+        public async Task<string> GetRankPositionsAsync(string keyword, string targetUrl)
         {
-            // Retrieve API credentials from configuration.
-            string apiKey = _configuration["GoogleSearch:ApiKey"];
-            string cx = _configuration["GoogleSearch:CustomSearchEngineId"];
+            string cacheKey = $"google:{keyword}:{targetUrl}".ToLowerInvariant();
 
-            var client = _httpClientFactory.CreateClient("GoogleSearchClient");
-            var requestUri = $"?key={apiKey}&cx={cx}&q={Uri.EscapeDataString(keyword)}";
+            //if (_cache.TryGetValue(cacheKey, out string cachedResult))
+            //{
+            //    return cachedResult;
+            //}
 
-            var response = await client.GetAsync(requestUri);
-            response.EnsureSuccessStatusCode();
+            var ranks = new List<int>();
+            var start = 0;
+            var position = 1;
+            int maxResults = _searchSetting.Limit;
 
-            var content = await response.Content.ReadAsStringAsync();
-            var results = new List<string>();
-
-            try
+            while (start < maxResults)
             {
-                using JsonDocument jsonDoc = JsonDocument.Parse(content);
-                if (jsonDoc.RootElement.TryGetProperty("items", out JsonElement items))
+                var requestUri = $"/search?q={Uri.EscapeDataString(keyword)}&start={start}";
+
+                var response = await _httpClient.GetAsync(requestUri);
+
+                if (response == null || !response.IsSuccessStatusCode) return "0";
+
+                var content = await response.Content.ReadAsStringAsync();
+                var matches = Regex.Matches(content, @"<a[^>]+href=\""(?<url>https?://[^\""]+)\""[^>]*>");
+
+                foreach (Match match in matches)
                 {
-                    foreach (var item in items.EnumerateArray())
+                    var resultUrl = match.Groups["url"].Value;
+
+                    if (ParseUrlHelper.NormalizeUrl(resultUrl).Contains(ParseUrlHelper.NormalizeUrl(targetUrl), StringComparison.OrdinalIgnoreCase))
                     {
-                        if (item.TryGetProperty("title", out JsonElement title))
-                        {
-                            results.Add(title.GetString() ?? "No Title");
-                        }
+                        ranks.Add(position);
                     }
+
+                    position++;
+                    if (position > maxResults)
+                        break;
                 }
-            }
-            catch (JsonException)
-            {
-                results.Add("Error parsing results.");
-            }
 
-            // Provide a default message if no results are found.
-            if (results.Count == 0)
-            {
-                results.Add("No results found from Google.");
+                start += 10;
+                await Task.Delay(1000); // polite delay between requests
             }
-
-            return results;
+            var result = ranks.Count > 0 ? string.Join(", ", ranks) : "0";
+            _cache.Set(cacheKey, result, TimeSpan.FromMinutes(_expireTime));
+            return result;
         }
+
     }
 }

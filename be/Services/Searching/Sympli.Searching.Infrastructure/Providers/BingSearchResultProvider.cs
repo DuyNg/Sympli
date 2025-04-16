@@ -5,6 +5,12 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using System;
+using Sympli.Searching.Core.Entities;
+using Microsoft.Extensions.Options;
+using Sympli.Searching.Core.Constants;
+using System.Text.RegularExpressions;
+using Sympli.Searching.Core.Utilities;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Sympli.Searching.Infrastructure.Providers
 {
@@ -13,59 +19,59 @@ namespace Sympli.Searching.Infrastructure.Providers
     /// </summary>
     public class BingSearchResultProvider : ISearchResultProvider
     {
-        private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IConfiguration _configuration;
+        private readonly HttpClient _httpClient;
+        private readonly IMemoryCache _cache;
+        private readonly SearchSetting _searchSetting;
+        private readonly int _expireTime;
 
-        public BingSearchResultProvider(IHttpClientFactory httpClientFactory, IConfiguration configuration)
+        public BingSearchResultProvider(IHttpClientFactory httpClientFactory, IOptions<AppSettings> appSettings, IMemoryCache cache)
         {
-            _httpClientFactory = httpClientFactory;
-            _configuration = configuration;
+            _httpClient = httpClientFactory.CreateClient(CommonConstants.BingSearchClient);
+            _searchSetting = appSettings.Value.BingSearch;
+            _expireTime = appSettings.Value.CacheingExpireation;
+            _cache = cache;
         }
 
-        public async Task<IEnumerable<string>> GetResultsAsync(string keyword)
+        public async Task<string> GetRankPositionsAsync(string keyword, string targetUrl)
         {
-            string apiKey = _configuration["BingSearch:ApiKey"];
+            string cacheKey = $"bing:{keyword}:{targetUrl}".ToLowerInvariant();
 
-            // Create a client configured for Bing searches.
-            var client = _httpClientFactory.CreateClient("BingSearchClient");
-            client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", apiKey);
-
-            // Construct a simple request URL using the keyword.
-            var requestUri = $"?q={Uri.EscapeDataString(keyword)}";
-
-            var response = await client.GetAsync(requestUri);
-            response.EnsureSuccessStatusCode();
-
-            var content = await response.Content.ReadAsStringAsync();
-            var results = new List<string>();
-
-            try
+            if (_cache.TryGetValue(cacheKey, out string cachedResult))
             {
-                using JsonDocument jsonDoc = JsonDocument.Parse(content);
-                // Simplified parsing logic: adapt based on the actual Bing API JSON schema.
-                if (jsonDoc.RootElement.TryGetProperty("webPages", out var webPages) &&
-                    webPages.TryGetProperty("value", out var items))
+                return cachedResult;
+            }
+
+            var ranks = new List<int>();
+            var first = 0;
+            var position = 1;
+            int maxResults = _searchSetting.Limit;
+
+            while (position <= maxResults)
+            {
+                var requestUri = $"?q={Uri.EscapeDataString(keyword)}&first={first + 1}";
+                var response = await _httpClient.GetStringAsync(requestUri);
+
+                // Simplified: Parse URLs from Bing results
+                var matches = Regex.Matches(response, @"<a href=""(http[^""]+)""");
+                foreach (Match match in matches)
                 {
-                    foreach (var item in items.EnumerateArray())
+                    var resultUrl = ParseUrlHelper.NormalizeUrl(match.Groups[1].Value);
+                    if (resultUrl.Contains(ParseUrlHelper.NormalizeUrl(targetUrl), StringComparison.OrdinalIgnoreCase))
                     {
-                        if (item.TryGetProperty("name", out var name))
-                        {
-                            results.Add(name.GetString() ?? "No Title");
-                        }
+                        ranks.Add(position);
                     }
+
+                    position++;
+                    if (position > maxResults) break;
                 }
-            }
-            catch (JsonException)
-            {
-                results.Add("Error parsing Bing results.");
+
+                first += 10;
+                await Task.Delay(1000); // Delay for courtesy
             }
 
-            if (results.Count == 0)
-            {
-                results.Add("No results found from Bing.");
-            }
-
-            return results;
+            var result = ranks.Count > 0 ? string.Join(", ", ranks) : "0";
+            _cache.Set(cacheKey, result, TimeSpan.FromMinutes(_expireTime));
+            return result;
         }
     }
 }

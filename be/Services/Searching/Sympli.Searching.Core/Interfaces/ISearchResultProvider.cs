@@ -8,6 +8,6 @@ namespace Sympli.Searching.Core.Interfaces
 {
     public interface ISearchResultProvider
     {
-        Task<IEnumerable<string>> GetResultsAsync(string keyword);
+        Task<string> GetRankPositionsAsync(string keyword, string targetUrl);
     }
 }

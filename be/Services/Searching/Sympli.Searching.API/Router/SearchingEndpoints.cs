@@ -9,21 +9,20 @@ namespace Sympli.Searching.API.Router
         public static void MapSearchingEndpoints(this IEndpointRouteBuilder app)
         {
             var productGroup = app.MapGroup("/api/search")
-                .RequireAuthorization()
                 .WithTags("Search by engine");
 
-            productGroup.MapGet("/google", async (string keyword, IMediator mediator) =>
+            productGroup.MapGet("/google/{keyword}/{url}", async (string keyword, string url, IMediator mediator) =>
             {
-                var query = new GetSearchResultsQuery(keyword, SearchEngineEnum.Google);
+                var query = new GetSearchResultsQuery(keyword, url, SearchEngineEnum.Google);
                 var result = await mediator.Send(query);
                 return Results.Ok(result);
             })
             .WithName("SearchWithGoogle")
             .WithTags("Search");
 
-            productGroup.MapGet("/bing", async (string keyword, IMediator mediator) =>
+            productGroup.MapGet("/bing/{keyword}/{url}", async (string keyword, string url, IMediator mediator) =>
             {
-                var query = new GetSearchResultsQuery(keyword, SearchEngineEnum.Bing);
+                var query = new GetSearchResultsQuery(keyword, url, SearchEngineEnum.Bing);
                 var result = await mediator.Send(query);
                 return Results.Ok(result);
             })

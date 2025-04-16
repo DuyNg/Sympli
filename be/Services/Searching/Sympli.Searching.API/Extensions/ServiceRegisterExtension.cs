@@ -1,7 +1,10 @@
-﻿using Sympli.Searching.Core.Constants;
+﻿using Microsoft.Extensions.Options;
+using Sympli.Searching.Core.Constants;
+using Sympli.Searching.Core.Entities;
 using Sympli.Searching.Core.Interfaces;
 using Sympli.Searching.Infrastructure.Factories;
 using Sympli.Searching.Infrastructure.Providers;
+using System.Net.Http;
 
 namespace Sympli.Searching.API.Extensions
 {
@@ -15,18 +18,40 @@ namespace Sympli.Searching.API.Extensions
             // Register the factory for creating search providers.
             services.AddScoped<ISearchProviderFactory, SearchProviderFactory>();
 
-            // Register a named HttpClient for the Google Search API.
-            services.AddHttpClient(CommonConstants.GoogleSearchClient, client =>
+            services.Configure<AppSettings>(_ =>
             {
-                var url = configuration["GoogleSearch:Url"];
-                client.BaseAddress = new Uri(url);
+                var limit = 100;
+
+                _.BingSearch = new SearchSetting
+                {
+                    Url = configuration["BingSearch:Url"] ?? throw new ArgumentNullException(nameof(SearchSetting)),
+                    Limit = int.TryParse(configuration["BingSearch:Limit"], out limit) ? limit : throw new ArgumentNullException(nameof(SearchSetting))
+                };
+
+                _.GoogleSearch = new SearchSetting
+                {
+                    Url = configuration["GoogleSearch:Url"] ?? throw new ArgumentNullException(nameof(SearchSetting)),
+                    Limit = int.TryParse(configuration["GoogleSearch:Limit"], out limit) ? limit : throw new ArgumentNullException(nameof(SearchSetting))
+                };
+
+                _.CacheingExpireation = int.TryParse(configuration["CacheingExpireation"], out int expireation) ? expireation : throw new ArgumentNullException(nameof(SearchSetting));
             });
 
-            services.AddHttpClient(CommonConstants.BingSearchClient, client =>
+            services.AddHttpClient(CommonConstants.GoogleSearchClient, (serviceProvider, client) =>
             {
-                var url = configuration["BingSearch:Url"];
-                client.BaseAddress = new Uri(url);
+                var settings = serviceProvider.GetRequiredService<IOptions<AppSettings>>().Value;
+                client.BaseAddress = new Uri(settings.GoogleSearch.Url);
+                client.DefaultRequestHeaders.Add("User-Agent", CommonConstants.DefaultUserAgent);
             });
+
+            services.AddHttpClient(CommonConstants.BingSearchClient, (serviceProvider, client) =>
+            {
+                var settings = serviceProvider.GetRequiredService<IOptions<AppSettings>>().Value;
+                client.BaseAddress = new Uri(settings.BingSearch.Url);
+                client.DefaultRequestHeaders.Add("User-Agent", CommonConstants.DefaultUserAgent);
+            });
+
+            services.AddMemoryCache();
 
             return services;
 
