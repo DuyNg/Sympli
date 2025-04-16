@@ -2,7 +2,7 @@ import React from 'react';
 import './ResultsTable.scss';
 
 interface Props {
-  results: { browser: string; positions: number[] }[];
+  results: { browser: string; positions: string }[];
 }
 
 export const ResultsTable: React.FC<Props> = ({ results }) => {
@@ -20,7 +20,7 @@ export const ResultsTable: React.FC<Props> = ({ results }) => {
         {results.map((result, index) => (
           <tr key={index}>
             <td>{result.browser}</td>
-            <td>{result.positions.join(', ')}</td>
+            <td>{result.positions}</td>
           </tr>
         ))}
       </tbody>

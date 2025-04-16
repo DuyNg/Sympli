@@ -3,8 +3,8 @@ import { ResultsTable } from './ResultsTable';
 
 test('renders table with results', () => {
   const results = [
-    { browser: 'Google', positions: [1, 3, 5] },
-    { browser: 'Bing', positions: [2, 4] },
+    { browser: 'Google', positions: '1, 3, 5' },
+    { browser: 'Bing', positions: '2, 4' },
   ];
 
   render(<ResultsTable results={results} />);
