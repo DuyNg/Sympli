@@ -15,16 +15,7 @@ var version = configuration["CustomSettings:Version"];
 Console.WriteLine($"App Name: {appName} - version: {version}");
 
 var services = builder.Services;
-services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll",
-        builder =>
-        {
-            builder.AllowAnyOrigin()
-                   .AllowAnyMethod()
-                   .AllowAnyHeader();
-        });
-});
+services.CorsRegister(configuration);
 
 // Register MediatR for CQRS handlers.
 services.MediatorRegister();
@@ -44,6 +35,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Simpli.Searching.API v1"));
 }
 
+
+
+app.UseCors("MyCorsPolicy");
+
+
 // Add Health Checks endpoint
 // app.MapHealthChecks("/health");
 
@@ -51,5 +47,7 @@ app.UseHttpsRedirection();
 
 // Minimal API endpoint for search.
 app.MapSearchingEndpoints();
+
+app.UseRouting();
 
 app.Run();

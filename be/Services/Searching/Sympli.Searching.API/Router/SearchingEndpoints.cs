@@ -17,6 +17,7 @@ namespace Sympli.Searching.API.Router
                 var result = await mediator.Send(query);
                 return Results.Ok(result);
             })
+            .AllowAnonymous()
             .WithName("SearchWithGoogle")
             .WithTags("Search");
 
@@ -26,6 +27,7 @@ namespace Sympli.Searching.API.Router
                 var result = await mediator.Send(query);
                 return Results.Ok(result);
             })
+            .AllowAnonymous()
             .WithName("SearchWithBing")
             .WithTags("Search");
         }
