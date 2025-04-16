@@ -1,0 +1,258 @@
+sympli-search-spa/
+├── src/
+│   ├── api/
+│   │   └── searchApi.ts             # Axios logic lives here
+│   ├── components/
+│   │   ├── SearchForm.tsx           # Input form
+│   │   ├── SearchForm.test.tsx
+│   │   ├── ResultsTable.tsx         # Results table
+│   │   └── ResultsTable.test.tsx
+│   ├── styles/
+│   │   └── App.scss                 # All styling here
+│   ├── App.tsx                      # Main logic, imports everything
+│   └── index.tsx
+
+======================
+// src/api/searchApi.ts
+import axios from 'axios';
+
+export interface SearchRequest {
+  keyword: string;
+  url: string;
+  browser: string;
+}
+
+export interface SearchResult {
+  browser: string;
+  positions: number[];
+}
+
+const API_URL = 'https://your-api-url.com/search';
+
+export const searchKeyword = async (payload: SearchRequest): Promise<SearchResult[]> => {
+  const response = await axios.post<SearchResult[]>(API_URL, payload, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  return response.data;
+};
+
+// src/components/SearchForm/SearchForm.tsx
+import React, { useState } from 'react';
+import './SearchForm.scss';
+
+interface Props {
+  onSearch: (data: { keyword: string; url: string; browser: string }) => void;
+}
+
+export const SearchForm: React.FC<Props> = ({ onSearch }) => {
+  const [keyword, setKeyword] = useState('');
+  const [url, setUrl] = useState('');
+  const [browser, setBrowser] = useState('All');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSearch({ keyword, url, browser });
+  };
+
+  return (
+    <form className="search-form" onSubmit={handleSubmit}>
+      <input
+        type="text"
+        placeholder="Keyword"
+        value={keyword}
+        onChange={(e) => setKeyword(e.target.value)}
+        required
+      />
+      <input
+        type="text"
+        placeholder="URL"
+        value={url}
+        onChange={(e) => setUrl(e.target.value)}
+        required
+      />
+      <select value={browser} onChange={(e) => setBrowser(e.target.value)}>
+        <option value="All">All</option>
+        <option value="Google">Google</option>
+        <option value="Bing">Bing</option>
+      </select>
+      <button type="submit">Search</button>
+    </form>
+  );
+};
+
+// src/components/SearchForm/SearchForm.scss
+.search-form {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.search-form input,
+.search-form select {
+  padding: 0.5rem;
+  font-size: 1rem;
+}
+
+.search-form button {
+  padding: 0.5rem 1rem;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+// src/components/SearchForm/SearchForm.test.tsx
+import { render, screen, fireEvent } from '@testing-library/react';
+import { SearchForm } from './SearchForm';
+
+test('calls onSearch with input values', () => {
+  const onSearch = jest.fn();
+  render(<SearchForm onSearch={onSearch} />);
+
+  fireEvent.change(screen.getByPlaceholderText('Keyword'), { target: { value: 'test keyword' } });
+  fireEvent.change(screen.getByPlaceholderText('URL'), { target: { value: 'http://example.com' } });
+  fireEvent.change(screen.getByDisplayValue('All'), { target: { value: 'Google' } });
+
+  fireEvent.click(screen.getByText('Search'));
+
+  expect(onSearch).toHaveBeenCalledWith({
+    keyword: 'test keyword',
+    url: 'http://example.com',
+    browser: 'Google',
+  });
+});
+
+// src/components/ResultsTable/ResultsTable.tsx
+import React from 'react';
+import './ResultsTable.scss';
+
+interface Props {
+  results: { browser: string; positions: number[] }[];
+}
+
+export const ResultsTable: React.FC<Props> = ({ results }) => {
+  if (results.length === 0) return null;
+
+  return (
+    <table className="results-table">
+      <thead>
+        <tr>
+          <th>Browser</th>
+          <th>Positions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {results.map((result, index) => (
+          <tr key={index}>
+            <td>{result.browser}</td>
+            <td>{result.positions.join(', ')}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+};
+
+// src/components/ResultsTable/ResultsTable.scss
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.results-table th,
+.results-table td {
+  border: 1px solid #ddd;
+  padding: 0.75rem;
+  text-align: left;
+}
+
+.results-table th {
+  background-color: #f4f4f4;
+}
+
+// src/components/ResultsTable/ResultsTable.test.tsx
+import { render, screen } from '@testing-library/react';
+import { ResultsTable } from './ResultsTable';
+
+test('renders table with results', () => {
+  const results = [
+    { browser: 'Google', positions: [1, 3, 5] },
+    { browser: 'Bing', positions: [2, 4] },
+  ];
+
+  render(<ResultsTable results={results} />);
+
+  expect(screen.getByText('Google')).toBeInTheDocument();
+  expect(screen.getByText('1, 3, 5')).toBeInTheDocument();
+  expect(screen.getByText('Bing')).toBeInTheDocument();
+  expect(screen.getByText('2, 4')).toBeInTheDocument();
+});
+
+// src/styles/App.scss
+.container {
+  max-width: 800px;
+  margin: 2rem auto;
+  font-family: sans-serif;
+}
+
+.title {
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+// src/App.tsx
+import React, { useState } from 'react';
+import './styles/App.scss';
+import { SearchForm } from './components/SearchForm/SearchForm';
+import { ResultsTable } from './components/ResultsTable/ResultsTable';
+import { searchKeyword, SearchResult } from './api/searchApi';
+
+const App: React.FC = () => {
+  const [results, setResults] = useState<SearchResult[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSearch = async (data: { keyword: string; url: string; browser: string }) => {
+    setLoading(true);
+    setError(null);
+    setResults([]);
+
+    try {
+      const apiResults = await searchKeyword(data);
+      const filtered = data.browser === 'All' ? apiResults : apiResults.filter(r => r.browser === data.browser);
+      setResults(filtered);
+    } catch (err) {
+      setError('Failed to fetch results. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="container">
+      <div className="title">Search Application</div>
+      <SearchForm onSearch={handleSearch} />
+      {loading && <p>Loading...</p>}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+      <ResultsTable results={results} />
+    </div>
+  );
+};
+
+export default App;
+
+// src/main.tsx
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+

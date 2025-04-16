@@ -1,0 +1,16 @@
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+  
+.results-table th,
+.results-table td {
+border: 1px solid #ddd;
+padding: 0.75rem;
+text-align: left;
+}
+
+.results-table th {
+background-color: #f4f4f4;
+}
+  
