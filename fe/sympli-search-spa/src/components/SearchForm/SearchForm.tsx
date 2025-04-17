@@ -13,7 +13,7 @@ export const SearchForm: React.FC<Props> = ({ onSearch }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSearch({ keyword, url, browser });
+    onSearch({ keyword: keyword.trim(), url: url.trim(), browser });
   };
 
   return (
