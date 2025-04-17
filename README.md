@@ -24,6 +24,7 @@ The CEO is impressed with the initial implementation and would like the applicat
   - A responsive page that allows users to search for results from Google and Bing based on input keywords and target URLs.
   - API integration using Axios.
   - Unit tests implemented with React Testing Library and Jest.
+- Refer detail at fe/README.MD
 
 ![Frontend Screenshot](https://github.com/user-attachments/assets/95a2107d-fa18-463e-b232-c14c623ee6e7)
 
@@ -37,5 +38,6 @@ The CEO is impressed with the initial implementation and would like the applicat
   - Query and command handling using MediatR.
   - In-memory caching for performance optimization.
   - Unit tests to ensure reliability and maintainability.
+- Refer detail at be/README.MD
 
 ![Backend Screenshot](https://github.com/user-attachments/assets/846bbc20-4d3e-48b8-a41e-90849fdd0600)
