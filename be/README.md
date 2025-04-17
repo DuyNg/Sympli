@@ -13,4 +13,5 @@
   - Factory Pattern: Used to create instances of search providers (e.g., Google and Bing) dynamically.
   - Caching: Implements in-memory caching to reduce redundant API calls and improve performance.
 # Structure
-## Please refer structure.txt
+- Please refer structure.txt
+- ![image](https://github.com/user-attachments/assets/60b44d91-56a0-43dd-a466-5d0e500fa971)
