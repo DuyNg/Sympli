@@ -1,0 +1,36 @@
+# Structure
+Sympli.sln
+└── Services
+    ├── OtherServices
+    │     ├── ...
+    └── Searching
+        ├── Sympli.Searching.Core
+        │     ├── Sympli.Searching.Core.csproj
+        │     ├── Entities
+        │     │     ├── SearchQuery.cs
+        │     │     └── SearchSetting.cs
+        │     ├── Interfaces
+        │     │     └── ISearchResultProvider.cs
+        │     └── Constants
+        │           └── SearchEngineEnum.cs
+        ├── Sympli.Searching.Application
+        │     ├── Sympli.Searching.Application.csproj
+        │     └── Queries
+        │           ├── GetSearchResultsQuery.cs
+        │           └── GetSearchResultsQueryHandler.cs
+        ├── Sympli.Searching.Infrastructure
+        │     ├── Sympli.Searching.Infrastructure.csproj
+        │     ├── Providers
+        │     │     ├── GoogleSearchResultProvider.cs
+        │     │     └── BingSearchResultProvider.cs
+        │     └── Services
+        │           └── HttpClientWrapper.cs
+        └── Sympli.Searching.API
+              ├── Sympli.Searching.API.csproj
+              ├── Program.cs
+              ├── Extensions
+              │     └── SwaggerRegisterExtension.cs
+              ├── Middleware
+              │     └── ErrorHandlingMiddleware.cs
+              └── Router
+                    └── SearchingEndpoints.cs
