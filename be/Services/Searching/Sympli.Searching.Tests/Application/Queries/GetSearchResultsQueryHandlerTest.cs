@@ -1,8 +1,8 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+﻿using Moq;
 using Sympli.Searching.Application.Queries;
 using Sympli.Searching.Core.Enums;
 using Sympli.Searching.Core.Interfaces;
+
 namespace Sympli.Searching.Tests.Application.Queries
 {
     [TestClass]

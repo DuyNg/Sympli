@@ -4,6 +4,7 @@ using Sympli.Searching.Core.Entities;
 using Sympli.Searching.Core.Interfaces;
 using Sympli.Searching.Infrastructure.Factories;
 using Sympli.Searching.Infrastructure.Providers;
+using Sympli.Searching.Infrastructure.Services;
 using System.Net.Http;
 
 namespace Sympli.Searching.API.Extensions
@@ -17,6 +18,8 @@ namespace Sympli.Searching.API.Extensions
             services.AddScoped<BingSearchResultProvider>();
             // Register the factory for creating search providers.
             services.AddScoped<ISearchProviderFactory, SearchProviderFactory>();
+            services.AddSingleton<ICacheService, CacheService>();
+            services.AddSingleton<IHttpClientWrapper, HttpClientWrapper>();
 
             services.Configure<AppSettings>(_ =>
             {
