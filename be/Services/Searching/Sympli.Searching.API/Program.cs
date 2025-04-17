@@ -1,4 +1,5 @@
 using Sympli.Searching.API.Extensions;
+using Sympli.Searching.API.Middleware;
 using Sympli.Searching.API.Router;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,6 +26,7 @@ services.ServicesRegister(configuration);
 
 // Optional: Add Swagger for API documentation.
 services.SwaggerRegister();
+services.AddHealthChecks();
 
 var app = builder.Build();
 
@@ -36,15 +38,12 @@ if (app.Environment.IsDevelopment())
 }
 
 
-
+// Add the ErrorHandlingMiddleware to the pipeline
+app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseCors("MyCorsPolicy");
-
-
 // Add Health Checks endpoint
-// app.MapHealthChecks("/health");
-
+app.MapHealthChecks("/health");
 app.UseHttpsRedirection();
-
 // Minimal API endpoint for search.
 app.MapSearchingEndpoints();
 
