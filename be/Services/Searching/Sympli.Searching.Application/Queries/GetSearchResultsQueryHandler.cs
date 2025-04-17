@@ -16,7 +16,7 @@ public class GetSearchResultsQueryHandler : IRequestHandler<GetSearchResultsQuer
     public async Task<SearchResultsDto> Handle(GetSearchResultsQuery request, CancellationToken cancellationToken)
     {
         var provider = _providerFactory.GetProvider(request.Engine);
-        var result = await provider.GetRankPositionsAsync(request.Keyword, request.url);
+        var result = await provider.GetRankPositionsAsync(request.Keyword, request.Url);
         return new SearchResultsDto() 
         { 
             Positions = result, 
