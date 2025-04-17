@@ -47,4 +47,44 @@ Axios for HTTP calls
 
 SCSS for styling
 
+## Structure
+src/
+├── api/
+│   ├── axiosInstance.ts
+│   └── searchApi.ts
+│
+├── components/
+│   ├── ResultsTable/
+│   │   ├── ResultsTable.scss
+│   │   ├── ResultsTable.test.tsx
+│   │   └── ResultsTable.tsx
+│   │
+│   ├── SearchForm/
+│   │   ├── SearchForm.scss
+│   │   ├── SearchForm.test.tsx
+│   │   └── SearchForm.tsx
+│   │
+│   └── index.ts
+│
+├── models/
+│   ├── SearchRequest.ts
+│   ├── SearchResult.ts
+│   └── index.ts
+│
+├── types/
+│   ├── Browser.ts
+│   └── index.ts
+│
+├── App.scss
+├── App.test.tsx
+├── App.tsx
+├── index.css
+├── index.tsx
+├── logo.svg
+├── react-app-env.d.ts
+├── reportWebVitals.ts
+└── setupTests.ts
+
+
+
 React Testing Library + Jest for unit testing
