@@ -6,7 +6,7 @@ namespace Sympli.Searching.Application.Queries
     /// <summary>
     /// Query to fetch search results based on the provided keyword.
     /// </summary>
-    public record GetSearchResultsQuery(string Keyword, string url, SearchEngineEnum Engine) : IRequest<SearchResultsDto>;
+    public record GetSearchResultsQuery(string Keyword, string Url, SearchEngineEnum Engine) : IRequest<SearchResultsDto>;
 
     /// <summary>
     /// DTO representing the search results.

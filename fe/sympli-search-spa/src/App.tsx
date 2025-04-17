@@ -35,7 +35,7 @@ const App: React.FC = () => {
 
   return (
     <div className="container">
-      <div className="title">Search Symli Application </div>
+      <div className="title">Search Symli Application</div>
       <SearchForm onSearch={handleSearch} />
       {loading && <p>Loading...</p>}
       {error && <p className="error-message">{error}</p>}

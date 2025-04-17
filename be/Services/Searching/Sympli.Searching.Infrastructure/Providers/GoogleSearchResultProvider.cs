@@ -1,14 +1,9 @@
 ﻿using Sympli.Searching.Core.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Text.Json;
 using Sympli.Searching.Core.Entities;
 using Microsoft.Extensions.Options;
 using Sympli.Searching.Core.Constants;
 using System.Text.RegularExpressions;
 using Sympli.Searching.Core.Utilities;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace Sympli.Searching.Infrastructure.Providers
 {
@@ -17,19 +12,31 @@ namespace Sympli.Searching.Infrastructure.Providers
     /// </summary>
     public class GoogleSearchResultProvider : ISearchResultProvider
     {
-        private readonly HttpClient _httpClient;
-        private readonly IMemoryCache _cache;
+        private readonly IHttpClientWrapper _httpClient;
+        private readonly ICacheService _cache;
         private readonly SearchSetting _searchSetting;
         private readonly int _expireTime;
 
-        public GoogleSearchResultProvider(IHttpClientFactory httpClientFactory, IOptions<AppSettings> appSettings, IMemoryCache cache)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpClientFactory"></param>
+        /// <param name="appSettings"></param>
+        /// <param name="cache"></param>
+        public GoogleSearchResultProvider(IHttpClientWrapper httpClient, IOptions<AppSettings> appSettings, ICacheService cache)
         {
-            _httpClient = httpClientFactory.CreateClient(CommonConstants.GoogleSearchClient);
+            _httpClient = httpClient;
             _searchSetting = appSettings.Value.GoogleSearch;
             _expireTime = appSettings.Value.CacheingExpireation;
             _cache = cache;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="keyword"></param>
+        /// <param name="targetUrl"></param>
+        /// <returns></returns>
         public async Task<string> GetRankPositionsAsync(string keyword, string targetUrl)
         {
             string cacheKey = $"google:{keyword}:{targetUrl}".ToLowerInvariant();
@@ -48,7 +55,7 @@ namespace Sympli.Searching.Infrastructure.Providers
             {
                 var requestUri = $"/search?q={Uri.EscapeDataString(keyword)}&start={start}";
 
-                var response = await _httpClient.GetAsync(requestUri);
+                var response = await _httpClient.GetAsync(CommonConstants.GoogleSearchClient, requestUri);
 
                 if (response == null || !response.IsSuccessStatusCode) return "0";
 
@@ -70,7 +77,7 @@ namespace Sympli.Searching.Infrastructure.Providers
                 }
 
                 start += 10;
-                await Task.Delay(1000); // polite delay between requests
+                await Task.Delay(500); // polite delay between requests
             }
             var result = ranks.Count > 0 ? string.Join(", ", ranks) : "0";
             _cache.Set(cacheKey, result, TimeSpan.FromMinutes(_expireTime));

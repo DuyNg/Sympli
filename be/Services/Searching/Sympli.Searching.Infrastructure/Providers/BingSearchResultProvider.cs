@@ -19,19 +19,31 @@ namespace Sympli.Searching.Infrastructure.Providers
     /// </summary>
     public class BingSearchResultProvider : ISearchResultProvider
     {
-        private readonly HttpClient _httpClient;
-        private readonly IMemoryCache _cache;
+        private readonly IHttpClientWrapper _httpClient;
+        private readonly ICacheService _cache;
         private readonly SearchSetting _searchSetting;
         private readonly int _expireTime;
 
-        public BingSearchResultProvider(IHttpClientFactory httpClientFactory, IOptions<AppSettings> appSettings, IMemoryCache cache)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpClientFactory"></param>
+        /// <param name="appSettings"></param>
+        /// <param name="cache"></param>
+        public BingSearchResultProvider(IHttpClientWrapper httpClient, IOptions<AppSettings> appSettings, ICacheService cache)
         {
-            _httpClient = httpClientFactory.CreateClient(CommonConstants.BingSearchClient);
+            _httpClient = httpClient;
             _searchSetting = appSettings.Value.BingSearch;
             _expireTime = appSettings.Value.CacheingExpireation;
             _cache = cache;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="keyword"></param>
+        /// <param name="targetUrl"></param>
+        /// <returns></returns>
         public async Task<string> GetRankPositionsAsync(string keyword, string targetUrl)
         {
             string cacheKey = $"bing:{keyword}:{targetUrl}".ToLowerInvariant();
@@ -49,7 +61,7 @@ namespace Sympli.Searching.Infrastructure.Providers
             while (position <= maxResults)
             {
                 var requestUri = $"?q={Uri.EscapeDataString(keyword)}&first={first + 1}";
-                var response = await _httpClient.GetStringAsync(requestUri);
+                var response = await _httpClient.GetStringAsync(CommonConstants.BingSearchClient, requestUri);
 
                 // Simplified: Parse URLs from Bing results
                 var matches = Regex.Matches(response, @"<a href=""(http[^""]+)""");
@@ -66,7 +78,7 @@ namespace Sympli.Searching.Infrastructure.Providers
                 }
 
                 first += 10;
-                await Task.Delay(1000); // Delay for courtesy
+                await Task.Delay(500); // Delay for courtesy
             }
 
             var result = ranks.Count > 0 ? string.Join(", ", ranks) : "0";
