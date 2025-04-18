@@ -60,7 +60,7 @@ namespace Sympli.Searching.Infrastructure.Providers
 
             while (position <= maxResults)
             {
-                var requestUri = $"?q={Uri.EscapeDataString(keyword)}&first={first + 1}";
+                var requestUri = $"search?q={Uri.EscapeDataString(keyword)}&first={first + 1}";
                 var response = await _httpClient.GetStringAsync(CommonConstants.BingSearchClient, requestUri);
 
                 // Simplified: Parse URLs from Bing results
@@ -78,7 +78,7 @@ namespace Sympli.Searching.Infrastructure.Providers
                 }
 
                 first += 10;
-                await Task.Delay(500); // Delay for courtesy
+                await Task.Delay(1000); // Delay for courtesy
             }
 
             var result = ranks.Count > 0 ? string.Join(", ", ranks) : "0";

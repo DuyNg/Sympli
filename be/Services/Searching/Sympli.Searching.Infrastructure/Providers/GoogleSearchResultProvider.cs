@@ -77,7 +77,7 @@ namespace Sympli.Searching.Infrastructure.Providers
                 }
 
                 start += 10;
-                await Task.Delay(500); // polite delay between requests
+                await Task.Delay(1000); // polite delay between requests
             }
             var result = ranks.Count > 0 ? string.Join(", ", ranks) : "0";
             _cache.Set(cacheKey, result, TimeSpan.FromMinutes(_expireTime));
