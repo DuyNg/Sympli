@@ -32,7 +32,7 @@ The CEO is impressed with the initial implementation and would like the applicat
 
 ## Backend
 
-- **Technologies**: Clean Architecture, CQRS, MediatR, Caching, Unit Testing
+- **Technologies**: .NET 9, Clean Architecture, CQRS, MediatR, Caching, Unit Testing
 - **Features**:
   - Modular architecture with a clear separation of concerns.
   - Query and command handling using MediatR.
