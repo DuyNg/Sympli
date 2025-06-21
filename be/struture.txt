@@ -1,4 +1,4 @@
-# Structure
+# Updated Structure
 Sympli.sln
 └── Services
     ├── OtherServices
@@ -10,7 +10,10 @@ Sympli.sln
         │     │     ├── SearchQuery.cs
         │     │     └── SearchSetting.cs
         │     ├── Interfaces
-        │     │     └── ISearchResultProvider.cs
+        │     │     ├── ISearchResultProvider.cs
+        │     │     ├── ISearchQueryValidator.cs
+        │     │     ├── ISearchEngineService.cs
+        │     │     └── ILoggingService.cs
         │     └── Constants
         │           └── SearchEngineEnum.cs
         ├── Sympli.Searching.Application
@@ -29,8 +32,18 @@ Sympli.sln
               ├── Sympli.Searching.API.csproj
               ├── Program.cs
               ├── Extensions
-              │     └── SwaggerRegisterExtension.cs
+              │     ├── SwaggerRegisterExtension.cs
+              │     ├── ServiceCollectionExtensions.cs
+              │     ├── ApplicationBuilderExtensions.cs
+              │     └── ConfigurationExtensions.cs
               ├── Middleware
               │     └── ErrorHandlingMiddleware.cs
               └── Router
                     └── SearchingEndpoints.cs
+        └── Sympli.Searching.Tests
+              ├── Sympli.Searching.Tests.csproj
+              ├── UnitTests
+              │     ├── SearchQueryTests.cs
+              │     └── SearchResultProviderTests.cs
+              └── IntegrationTests
+                    └── SearchingEndpointsTests.cs

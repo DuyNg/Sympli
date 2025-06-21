@@ -8,15 +8,27 @@ namespace Sympli.Searching.API.Extensions
         {
             var allowedOrigins = configuration.GetSection("AllowedOrigins").Get<string[]>();
 
+            //services.AddCors(options =>
+            //{
+            //    options.AddPolicy("MyCorsPolicy", policy =>
+            //    {
+            //        policy.AllowAnyOrigin()
+            //              .AllowAnyMethod()
+            //              .AllowAnyHeader();
+            //    });
+            //});
+
             services.AddCors(options =>
             {
                 options.AddPolicy("MyCorsPolicy", policy =>
                 {
-                    policy.AllowAnyOrigin()
+                    policy.WithOrigins(allowedOrigins)
                           .AllowAnyMethod()
-                          .AllowAnyHeader();
+                          .AllowAnyHeader()
+                          .AllowCredentials(); // only if needed
                 });
             });
+
 
             return services;
         }

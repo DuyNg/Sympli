@@ -1,21 +1,16 @@
-﻿using Sympli.Searching.Core.Interfaces;
-using System.Net.Http;
-using System.Text.Json;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using Microsoft.Extensions.Configuration;
-using System;
-using Sympli.Searching.Core.Entities;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sympli.Searching.Core.Constants;
-using System.Text.RegularExpressions;
+using Sympli.Searching.Core.Entities;
+using Sympli.Searching.Core.Exceptions;
+using Sympli.Searching.Core.Interfaces;
 using Sympli.Searching.Core.Utilities;
-using Microsoft.Extensions.Caching.Memory;
+using System.Text.RegularExpressions;
 
 namespace Sympli.Searching.Infrastructure.Providers
 {
     /// <summary>
-    /// Implementation of ISearchResultProvider using the Bing Search API.
+    /// /// Represents a provider for Bing search results.
     /// </summary>
     public class BingSearchResultProvider : ISearchResultProvider
     {
@@ -23,19 +18,26 @@ namespace Sympli.Searching.Infrastructure.Providers
         private readonly ICacheService _cache;
         private readonly SearchSetting _searchSetting;
         private readonly int _expireTime;
+        private readonly ILogger<BingSearchResultProvider> _logger;
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="httpClientFactory"></param>
+        /// <param name="httpClient"></param>
         /// <param name="appSettings"></param>
         /// <param name="cache"></param>
-        public BingSearchResultProvider(IHttpClientWrapper httpClient, IOptions<AppSettings> appSettings, ICacheService cache)
+        /// <param name="logger"></param>
+        public BingSearchResultProvider(
+            IHttpClientWrapper httpClient,
+            IOptions<AppSettings> appSettings,
+            ICacheService cache,
+            ILogger<BingSearchResultProvider> logger)
         {
             _httpClient = httpClient;
             _searchSetting = appSettings.Value.BingSearch;
             _expireTime = appSettings.Value.CacheingExpireation;
             _cache = cache;
+            _logger = logger;
         }
 
         /// <summary>
@@ -44,12 +46,20 @@ namespace Sympli.Searching.Infrastructure.Providers
         /// <param name="keyword"></param>
         /// <param name="targetUrl"></param>
         /// <returns></returns>
+        /// <exception cref="SearchProviderException"></exception>
         public async Task<string> GetRankPositionsAsync(string keyword, string targetUrl)
         {
+            if (string.IsNullOrWhiteSpace(keyword) || string.IsNullOrWhiteSpace(targetUrl))
+            {
+                _logger.LogWarning("Invalid input: keyword or targetUrl is empty.");
+                throw new SearchProviderException("Keyword and target URL cannot be empty.");
+            }
+
             string cacheKey = $"bing:{keyword}:{targetUrl}".ToLowerInvariant();
 
             if (_cache.TryGetValue(cacheKey, out string cachedResult))
             {
+                _logger.LogInformation("Cache hit for key: {CacheKey}", cacheKey);
                 return cachedResult;
             }
 
@@ -61,10 +71,31 @@ namespace Sympli.Searching.Infrastructure.Providers
             while (position <= maxResults)
             {
                 var requestUri = $"?q={Uri.EscapeDataString(keyword)}&first={first + 1}";
-                var response = await _httpClient.GetStringAsync(CommonConstants.BingSearchClient, requestUri);
+                _logger.LogInformation("Fetching Bing results for keyword: {Keyword}, first: {First}", keyword, first + 1);
 
-                // Simplified: Parse URLs from Bing results
-                var matches = Regex.Matches(response, @"<a href=""(http[^""]+)""");
+                string content;
+                try
+                {
+                    content = await _httpClient.GetStringAsync(CommonConstants.BingSearchClient, requestUri);
+                }
+                catch (HttpRequestException ex)
+                {
+                    if (ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+                    {
+                        _logger.LogWarning("Rate limit exceeded for Bing API.");
+                        throw new SearchProviderException("Rate limit exceeded for Bing Search.");
+                    }
+                    _logger.LogError(ex, "Bing API request failed for URI: {RequestUri}", requestUri);
+                    throw new SearchProviderException($"Bing API request failed: {ex.Message}");
+                }
+
+                if (string.IsNullOrEmpty(content))
+                {
+                    _logger.LogWarning("Bing API returned empty content for URI: {RequestUri}", requestUri);
+                    throw new SearchProviderException("Bing API returned empty content.");
+                }
+
+                var matches = Regex.Matches(content, @"<a href=""(http[^""]+)""");
                 foreach (Match match in matches)
                 {
                     var resultUrl = ParseUrlHelper.NormalizeUrl(match.Groups[1].Value);
@@ -83,6 +114,7 @@ namespace Sympli.Searching.Infrastructure.Providers
 
             var result = ranks.Count > 0 ? string.Join(", ", ranks) : "0";
             _cache.Set(cacheKey, result, TimeSpan.FromMinutes(_expireTime));
+            _logger.LogInformation("Cached result for key: {CacheKey}, Result: {Result}", cacheKey, result);
             return result;
         }
     }

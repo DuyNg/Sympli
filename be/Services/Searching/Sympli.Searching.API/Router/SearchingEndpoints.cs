@@ -11,8 +11,9 @@ namespace Sympli.Searching.API.Router
             var productGroup = app.MapGroup("/api/search")
                 .WithTags("Search by engine");
 
-            productGroup.MapGet("/google/{keyword}/{url}", async (string keyword, string url, IMediator mediator) =>
+            productGroup.MapGet("/google/{keyword}/{url}", async (string keyword, string url, HttpRequest request, IMediator mediator) =>
             {
+                var body = await new StreamReader(request.Body).ReadToEndAsync();
                 var query = new GetSearchResultsQuery(keyword, url, SearchEngineEnum.Google);
                 var result = await mediator.Send(query);
                 return Results.Ok(result);
